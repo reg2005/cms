@@ -57,8 +57,14 @@ class MediaLibrary
      */
     protected function init()
     {
-        $this->storageFolder = self::validatePath(Config::get('cms.storage.media.folder', 'media'), true);
-        $this->storagePath = rtrim(Config::get('cms.storage.media.path', '/storage/app/media'), '/');
+        $storageFolder = self::validatePath(Config::get('cms.storage.media.folder', 'media'), true);
+        $storagePath = rtrim(Config::get('cms.storage.media.path', '/storage/app/media'), '/');
+
+        $storageFolder = \Event::fire('cms.storage.media.folder', [$storageFolder]);
+        $storagePath = \Event::fire('cms.storage.media.path', [$storagePath]);
+
+        $this->storageFolder = is_array($storageFolder) ? array_pop($storageFolder) : $storageFolder;
+        $this->storagePath = is_array($storagePath) ? array_pop($storagePath) : $storagePath;
 
         if (!starts_with($this->storagePath, ['//', 'http://', 'https://'])) {
             $this->storagePath = Request::getBasePath() . $this->storagePath;
